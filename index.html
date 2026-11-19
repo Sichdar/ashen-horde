@@ -53,9 +53,20 @@ h1,h2,h3{font-family:Cinzel,Georgia,serif;margin:0;line-height:1.05;text-wrap:ba
 .ghost{min-height:46px;padding:0 22px;border:1px solid var(--line);border-radius:2px;background:linear-gradient(180deg,rgba(32,22,16,.9),rgba(6,4,3,.9));box-shadow:inset 0 0 0 1px #000;font-size:15px;letter-spacing:.05em}
 .ghost:active{border-color:var(--gold)}
 .best{margin:0;color:var(--mute);font-size:14px;text-align:center}
-/* S06: the town between nights: tap a building to rebuild it */
-#town{width:min(100%,520px);height:auto;display:block;border:1px solid #5a4220;border-radius:3px;box-shadow:inset 0 0 0 1px #000,0 0 22px rgba(0,0,0,.6);cursor:pointer;touch-action:manipulation}
-#townTxt{margin:0;font-size:15px;max-width:460px;text-align:center;color:var(--ink);min-height:2.9em}
+/* S07: the town is the home: the buildings are the buttons, the heroes sit around the fire (drawn on the main canvas behind #hubSpace) */
+#menu{gap:8px}
+#menu .title{margin-top:clamp(4px,1.5vh,18px)}
+#menu .title h1{font-size:clamp(28px,8vw,50px)}
+#menu .title p{margin-top:4px;font-size:14px}
+#menu .purse{padding:5px 14px;font-size:15px}
+#hubSpace{flex:1 0 auto;width:100%;min-height:320px;cursor:pointer;touch-action:manipulation}
+#hubPanel{width:min(100%,440px);display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 14px 14px;border:1px solid var(--line);border-radius:3px;background:linear-gradient(180deg,rgba(26,18,13,.9),rgba(6,4,3,.94));box-shadow:inset 0 0 0 1px #000,0 0 22px rgba(0,0,0,.7)}
+#hubName{font:700 18px Cinzel,serif;color:#ffd9a8;letter-spacing:.04em;text-shadow:0 0 10px rgba(255,90,30,.5)}
+#hubTxt{margin:0;font-size:15px;text-align:center;color:var(--ink);min-height:2.9em}
+#hubBtns{display:flex;justify-content:center}
+#hubBtns [hidden]{display:none}
+#endBurn{margin:0;color:#ff9a6a;font-size:15px;text-align:center}
+#endBurn:empty{display:none}
 .ib{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a1d16,#070504);border:1px solid var(--line);box-shadow:inset 0 0 0 2px #000,0 0 10px rgba(0,0,0,.7);pointer-events:auto}
 .ib svg{width:20px;height:20px}
 .corner{position:fixed;top:calc(env(safe-area-inset-top) + 12px);z-index:5}
@@ -156,12 +167,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:2px;bac
   <button class="ib setB corner r2" aria-label="Settings"><svg viewBox="0 0 20 20" fill="none" stroke="#e6d6b8" stroke-width="1.7"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.5v2.2M10 15.3v2.2M2.5 10h2.2M15.3 10h2.2M4.7 4.7l1.6 1.6M13.7 13.7l1.6 1.6M4.7 15.3l1.6-1.6M13.7 6.3l1.6-1.6"/><circle cx="10" cy="10" r="5.4"/></svg></button>
   <header class="title"><h1>Ashen<br>Horde</h1><div class="orn"></div><p>Survive the night. Slay the Ash Lord.</p></header>
   <div class="purse"><span class="soul"></span><span id="purse">0</span>&nbsp;souls</div>
-  <div id="heroes" class="heroes"></div>
-  <button id="playB" class="big">Descend</button>
-  <button id="altarB" class="ghost">Altar of Souls</button>
-  <canvas id="town" width="520" height="210" role="img" aria-label="The town: Chapel, Watchtower and Rampart, some still in ruins"></canvas>
-  <p id="townTxt"></p>
-  <button id="townBuy" class="ghost"></button>
+  <div id="hubSpace" role="img" aria-label="The town square: the heroes sit around a fire pit; the Gate, Chapel, Watchtower, Altar of Souls and Rampart stand around it"></div>
+  <div id="hubPanel"><b id="hubName"></b><p id="hubTxt"></p><div id="hubBtns"><button id="playB" class="big">Descend</button><button id="townBuy" class="ghost"></button></div></div>
   <p id="best" class="best"></p>
   <p id="sync" class="note"></p>
 </div>
@@ -172,7 +179,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:2px;bac
   <div class="purse"><span class="soul"></span><span id="purse2">0</span>&nbsp;souls</div>
   <div id="metaList"></div>
   <p class="note">Blessings last forever and apply to every hero.</p>
-  <button id="altarBack" class="ghost">Back to the keep</button>
+  <button id="altarBack" class="ghost">Back to town</button>
 </div>
 
 <div id="lvlM" class="modal"><div class="box frame">
@@ -216,8 +223,9 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:2px;bac
   <p id="endS" class="sub"></p>
   <div id="endStats" class="stats"></div>
   <div class="earn"><span class="soul"></span><div>+<span id="endSouls">0</span> souls<small id="endBreak"></small></div></div>
+  <p id="endBurn"></p>
   <button id="againB" class="big">Descend again</button>
-  <button id="homeB" class="ghost">Return to the keep</button>
+  <button id="homeB" class="ghost">Return to town</button>
 </div></div>
 <div id="safe" style="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)"></div>
 
@@ -234,7 +242,7 @@ const DEBUG=/debug/.test(location.hash);
 
 /* ---------- save (format unchanged: key ashenHorde_v1 + cloud data/users/<id>/save) ---------- */
 const KEY='ashenHorde_v1';
-const defaults=()=>({souls:0,heroes:{barbarian:true},meta:{},town:{},best:{time:0,kills:0,wins:0},muted:false,runs:0,hero:'barbarian',ts:0});
+const defaults=()=>({souls:0,heroes:{barbarian:true},meta:{},town:{},dmg:{},best:{time:0,kills:0,wins:0},muted:false,runs:0,hero:'barbarian',ts:0});
 let save=defaults();
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)save=Object.assign(save,s)}catch(e){}
 let cloud=null,cloudBusy=false,cloudDirty=false;
@@ -1392,47 +1400,74 @@ function updateHud(){
 }
 function soulsEarned(){const base=run.souls+Math.floor(run.kills/15)+Math.floor(run.time/10)+(run.won?120:0);return{base,total:Math.round(base*(1+.15*meta('greed')+.1*townLv('watch')))}}
 function showEnd(win){
-  const e=soulsEarned();save.souls+=e.total;save.runs++;save.best.time=Math.max(save.best.time,Math.floor(run.time));save.best.kills=Math.max(save.best.kills,run.kills);if(win)save.best.wins=(save.best.wins||0)+1;persist();
+  const e=soulsEarned();save.souls+=e.total;save.runs++;save.best.time=Math.max(save.best.time,Math.floor(run.time));save.best.kills=Math.max(save.best.kills,run.kills);if(win)save.best.wins=(save.best.wins||0)+1;
+  /* S07: a lost night burns one standing building (its bonus drops a level until repaired) */
+  run.burned=null;if(!win){const c=TOWN.filter(b=>townRaw(b.k)>0&&!townHurt(b.k));if(c.length){const b=c[(rand()*c.length)|0];save.dmg=save.dmg||{};save.dmg[b.k]=1;run.burned=b.k}}
+  persist();
   $('endT').textContent=win?'Victory':'You have fallen';$('endM').querySelector('.box').classList.toggle('dead',!win);
   $('endS').textContent=win?'Malgrath, the Ash Lord, is slain. The night is yours.':run.time>=BOSS_T?'The Ash Lord claims another soul.':`The Ash Lord waited at ${fmt(BOSS_T)}.`;
   $('endStats').innerHTML=[[fmt(run.time),'survived'],[run.kills,'slain'],['Lv '+run.level,'reached'],[HEROES[run.hero].name,'hero']].map(([b,s])=>`<div><b>${b}</b><small>${s}</small></div>`).join('');
   $('endSouls').textContent=e.total;
   $('endBreak').textContent=`${run.souls} gathered · ${Math.floor(run.kills/15)} from kills · ${Math.floor(run.time/10)} for time${win?' · 120 for the Ash Lord':''}${meta('greed')?' · Greed bonus':''}${townLv('watch')?' · Watchtower bonus':''}`;
+  $('endBurn').textContent=run.burned?`The horde burned the ${HUBN[run.burned]}. Repair it in town.`:'';
   setState('end');
 }
 function buildMenu(){
   $('purse').textContent=save.souls;$('purse2').textContent=save.souls;
-  const box=$('heroes');box.innerHTML='';
-  for(const id in HEROES){const h=HEROES[id],own=!!save.heroes[id],b=document.createElement('button');b.className='hero'+(save.hero===id?' sel':'')+(own?'':' lock');
-    b.innerHTML=`<canvas width="156" height="156"></canvas><b>${h.name}</b><small>${h.perk}</small>${own?'':`<span class="cost"><span class="soul"></span>${h.cost}</span>`}`;
-    const g=b.firstChild.getContext('2d'),sp=SPR[id].n[0];const gl=g.createRadialGradient(78,92,4,78,92,70);gl.addColorStop(0,'rgba(255,110,40,.28)');gl.addColorStop(1,'rgba(255,110,40,0)');g.fillStyle=gl;g.fillRect(0,0,156,156);
-    g.drawImage(SHADOW,40,118,76,20);g.drawImage(sp,(156-sp.width*.88)/2,(156-sp.height*.88)/2+4,sp.width*.88,sp.height*.88);
-    b.onclick=()=>{auInit();save.hero=id;persist();sfx.tick();buildMenu()};box.appendChild(b)}
-  const h=HEROES[save.hero],own=!!save.heroes[save.hero],pb=$('playB');
-  if(own){pb.textContent='Descend';pb.disabled=false}else{pb.textContent=`Unlock · ${h.cost} souls`;pb.disabled=save.souls<h.cost}
   const bt=save.best;$('best').textContent=bt.time?`Longest night ${fmt(bt.time)} · Most slain ${bt.kills}${bt.wins?` · Ash Lord slain ${bt.wins}×`:''}`:'Drag anywhere to move. Your attacks are automatic.';
-  drawTown();townInfo();
+  hubInfo();
 }
-/* S06: the town is the home between nights. Each building is ruined, rebuilt (level 1) or fortified (level 2). */
-const TOWN=[{k:'chapel',n:'Chapel',fx:'+1 reroll per level, each night',w:96,h:80,x:92},{k:'watch',n:'Watchtower',fx:'+10% souls per level',w:60,h:122,x:260},{k:'wall',n:'Rampart',fx:'+12% life per level, each night',w:116,h:54,x:428}];
-const townLv=k=>(save.town&&save.town[k])||0;
+/* S06/S07: the town is the home and the main menu. Chapel, Watchtower and Rampart are ruined, rebuilt (1) or fortified (2);
+   a lost night burns one of them (save.dmg), which takes one level off its bonus until repaired. The Gate starts a night,
+   the Altar opens the blessings. The heroes sit around the fire; the chosen one walks into the light. */
+const TOWN=[{k:'chapel',n:'Chapel',fx:'+1 reroll per level, each night'},{k:'watch',n:'Watchtower',fx:'+10% souls per level'},{k:'wall',n:'Rampart',fx:'+12% life per level, each night'}];
+const townRaw=k=>(save.town&&save.town[k])||0;
+const townHurt=k=>!!(save.dmg&&save.dmg[k]);
+const townLv=k=>Math.max(0,townRaw(k)-(townHurt(k)?1:0));
 const townCost=l=>[40,110][l];
-let townSel=0;
-function drawTown(){
-  const c=$('town');if(!c)return;const g=c.getContext('2d'),W=c.width,H=c.height,base=176;
-  const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#0a0605');sky.addColorStop(.7,'#2a130c');sky.addColorStop(1,'#4a200f');g.fillStyle=sky;g.fillRect(0,0,W,H);
-  const glow=g.createRadialGradient(W/2,base,10,W/2,base,W*.55);glow.addColorStop(0,'rgba(255,130,50,.38)');glow.addColorStop(1,'rgba(255,130,50,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);
-  g.fillStyle='#120a08';g.fillRect(0,base,W,H-base);
-  g.strokeStyle='rgba(120,80,50,.22)';g.lineWidth=1;for(let i=0;i<=W;i+=40){g.beginPath();g.moveTo(i,base);g.lineTo(i-30,H);g.stroke()}
-  TOWN.forEach((b,i)=>drawBuilding(g,b,townLv(b.k),i===townSel,base));
+const repairCost=l=>[20,55][Math.max(0,l-1)];
+const HUBB={chapel:{w:96,h:80,fx:.18,row:0},gate:{w:88,h:76,fx:.5,row:0},watch:{w:60,h:122,fx:.83,row:0},altar:{w:66,h:46,fx:.14,row:1},wall:{w:100,h:54,fx:.86,row:1}};
+const HUBN={chapel:'Chapel',gate:'Gate',watch:'Watchtower',altar:'Altar of Souls',wall:'Rampart'};
+const HANG={barbarian:Math.PI,necromancer:Math.PI*1.27,sorceress:Math.PI*1.73,rogue:0};
+const HUB={G:null,heroes:{},hp:{},rects:{},fl:[],dark:new Map()};
+let hubSel={t:'hero'};
+function hubInfo(){
+  const nm=$('hubName'),tx=$('hubTxt'),pb=$('playB'),tb=$('townBuy');
+  if(hubSel.t==='b'){const k=hubSel.k,b=TOWN.find(x=>x.k===k),r=townRaw(k),hurt=townHurt(k),st=hurt?'Burning':['In ruins','Rebuilt','Fortified'][r];
+    nm.textContent=b.n;tx.textContent=`${st}. ${b.fx}.${hurt?' The horde set it alight: one level of its bonus is lost until you repair it.':''}`;
+    pb.hidden=true;tb.hidden=false;
+    if(hurt){const c=repairCost(r);tb.innerHTML=`Repair · <span class="soul"></span>${c}`;tb.disabled=save.souls<c}
+    else if(r>=2){tb.textContent='Fortified';tb.disabled=true}
+    else{const c=townCost(r);tb.innerHTML=`${r?'Fortify':'Rebuild'} · <span class="soul"></span>${c}`;tb.disabled=save.souls<c}
+    return}
+  tb.hidden=true;pb.hidden=false;
+  const h=HEROES[save.hero],own=!!save.heroes[save.hero];
+  if(hubSel.t==='gate'){nm.textContent='The Gate';tx.textContent=`Beyond it, the night and the horde. ${h.name} ${own?'is ready.':'must be unlocked first.'}`}
+  else{nm.textContent=h.name;tx.textContent=`${h.perk}. Tap a building to visit it.`}
+  if(own){pb.textContent='Descend';pb.disabled=false}else{pb.textContent=`Unlock · ${h.cost} souls`;pb.disabled=save.souls<h.cost}
 }
-function drawBuilding(g,b,l,sel,base){
+function hubGeom(){const r=$('hubSpace').getBoundingClientRect(),s=clamp(Math.min(r.width/440,r.height/340),.6,1.15);
+  const G={x:r.left,y:r.top,w:r.width,h:r.height,s,cx:r.left+r.width/2,fy:r.top+r.height*.66,back:r.top+Math.max(152*s,r.height*.36),front:r.bottom-14};
+  G.rx=Math.min(r.width*.34,190*s);G.ry=G.rx*.48;return G}
+function hubDark(id,fi,flip){const key=id+fi+flip;let c=HUB.dark.get(key);if(!c){c=silhouette(SPR[id].fr[fi].n[flip],'#0c0706');HUB.dark.set(key,c)}return c}
+function drawBuilding(g,b,l,base){
   const {w,h,x}=b,L=x-w/2,R=x+w/2,T=base-h;
-  if(sel){g.strokeStyle='rgba(255,210,122,.85)';g.lineWidth=2;g.setLineDash([5,4]);g.strokeRect(L-10,T-30,w+20,h+38);g.setLineDash([])}
+  if(b.k==='gate'){/* towers, a battlemented arch, the red night beyond a portcullis */
+    g.fillStyle='#4a3428';g.fillRect(L,T+h*.1,w*.28,h*.9);g.fillRect(R-w*.28,T+h*.1,w*.28,h*.9);g.fillRect(L,T+h*.18,w,h*.2);
+    for(let i=0;i<2;i++){g.fillRect(L+i*w*.15,T,w*.1,h*.12);g.fillRect(R-w*.1-i*w*.15,T,w*.1,h*.12)}
+    const aw=w*.44,ay=T+h*.38,ar=aw/2,gr=g.createLinearGradient(0,ay,0,base);gr.addColorStop(0,'#3a0a05');gr.addColorStop(1,'#b8300f');
+    g.fillStyle=gr;g.beginPath();g.moveTo(x-ar,base);g.lineTo(x-ar,ay+ar);g.arc(x,ay+ar,ar,Math.PI,0);g.lineTo(x+ar,base);g.closePath();g.fill();
+    g.strokeStyle='#1a0d08';g.lineWidth=2;for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(x+i*ar*.38,ay+2);g.lineTo(x+i*ar*.38,base-h*.25);g.stroke()}
+    g.beginPath();g.moveTo(x-ar,ay+ar*1.1);g.lineTo(x+ar,ay+ar*1.1);g.moveTo(x-ar,ay+ar*1.9);g.lineTo(x+ar,ay+ar*1.9);g.stroke();
+    g.fillStyle='#2a1a12';g.fillRect(L+w*.1,T+h*.48,5,9);g.fillRect(R-w*.1-5,T+h*.48,5,9);return}
+  if(b.k==='altar'){/* stone slab, a dark obelisk, soul light */
+    g.fillStyle='#2e231e';g.beginPath();g.moveTo(x-w*.13,T+h*.4);g.lineTo(x,T-h*.35);g.lineTo(x+w*.13,T+h*.4);g.closePath();g.fill();
+    g.fillStyle='#3e3029';g.fillRect(L+w*.12,T+h*.5,w*.76,h*.5);g.fillStyle='#57463b';g.fillRect(L,T+h*.36,w,h*.16);
+    g.fillStyle='#d9c3ff';g.fillRect(x-1.5,T-h*.05,3,8);return}
   if(l===0){/* ruin: broken walls, rubble, smoke */
     g.fillStyle='#3a2921';g.beginPath();g.moveTo(L,base);g.lineTo(L,T+h*.45);g.lineTo(L+w*.2,T+h*.3);g.lineTo(L+w*.36,T+h*.56);g.lineTo(L+w*.6,T+h*.18);g.lineTo(R-w*.14,T+h*.5);g.lineTo(R,T+h*.34);g.lineTo(R,base);g.closePath();g.fill();
     g.fillStyle='#21150f';for(let i=0;i<6;i++)g.fillRect(L-4+i*(w+8)/6,base-5-(i%3)*4,12+(i%2)*6,5);
-    g.fillStyle='rgba(150,140,130,.22)';g.beginPath();g.ellipse(x,T-8,16,7,0,0,TAU);g.fill();g.beginPath();g.ellipse(x+8,T-26,10,5,0,0,TAU);g.fill();
+    g.fillStyle='rgba(150,140,130,.22)';g.beginPath();g.ellipse(x,T-8+Math.sin(menuT*.7)*2,16,7,0,0,TAU);g.fill();g.beginPath();g.ellipse(x+8,T-26+Math.sin(menuT*.5)*3,10,5,0,0,TAU);g.fill();
     return}
   const wall=l===1?'#4d362a':'#5e4132';
   g.fillStyle=wall;g.fillRect(L,T+h*.26,w,base-(T+h*.26));
@@ -1444,15 +1479,70 @@ function drawBuilding(g,b,l,sel,base){
   g.fillStyle=l===2?'#ffa04a':'#1a0f0b';g.fillRect(L+w*.2,T+h*.42,8,11);g.fillRect(R-w*.2-8,T+h*.42,8,11);
   if(l===2){g.save();g.shadowColor='rgba(255,140,60,.9)';g.shadowBlur=12;g.fillStyle='#ffb868';g.fillRect(L+w*.2+2,T+h*.44,4,7);g.fillRect(R-w*.2-6,T+h*.44,4,7);g.restore()}
 }
-function townInfo(){
-  const b=TOWN[townSel],l=townLv(b.k),st=['Ruined','Rebuilt','Fortified'][l];
-  $('townTxt').textContent=`${b.n}: ${st}. ${b.fx}.`;
-  const tb=$('townBuy');
-  if(l>=2){tb.textContent='Fortified';tb.disabled=true}
-  else{const c=townCost(l);tb.innerHTML=`${l?'Fortify':'Rebuild'} · <span class="soul"></span>${c}`;tb.disabled=save.souls<c}
+function hubFlames(x,y,s,t,big){/* additive flame tongues; big = the fire pit, small = a burning roof */
+  const n=big?5:3,m=big?1:.55;ctx.globalCompositeOperation='lighter';
+  drawGlow('fire',x,y-8*s*m,(big?120:60)*s*(1+Math.sin(t*7)*.05+Math.sin(t*17)*.03),big?.75:.6);ctx.globalAlpha=1;
+  for(let i=0;i<n;i++){const c=(n-1)/2,e=Math.abs(i-c)/c||0,o=(i-c)*5*s*m,h=(26+Math.sin(t*8+i*1.9)*6+Math.sin(t*15+i)*3)*s*m*(1-e*.35),w=7*s*m*(1-e*.25),sw=Math.sin(t*5+i)*3*s*m;
+    const gr=ctx.createLinearGradient(0,y,0,y-h);gr.addColorStop(0,'rgba(255,232,160,.95)');gr.addColorStop(.45,'rgba(255,120,30,.75)');gr.addColorStop(1,'rgba(160,20,5,0)');
+    ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(x+o-w,y);ctx.quadraticCurveTo(x+o-w*1.1,y-h*.45,x+o+sw,y-h);ctx.quadraticCurveTo(x+o+w*1.1,y-h*.45,x+o+w,y);ctx.closePath();ctx.fill()}
+  ctx.globalCompositeOperation='source-over'}
+function hubLabel(x,y,txt,col,sel,s){ctx.font=`600 ${Math.round(11*Math.max(.95,s))}px Cinzel,Georgia,serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  const w=ctx.measureText(txt).width+12;ctx.globalAlpha=sel?.92:.75;ctx.fillStyle='#0a0605';ctx.fillRect(x-w/2,y-8,w,16);ctx.strokeStyle=sel?'#ffd27a':'rgba(201,154,62,.45)';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-7.5,w-1,15);
+  ctx.globalAlpha=1;ctx.fillStyle=col;ctx.fillText(txt,x,y+.5)}
+function renderHub(dt){
+  const G=HUB.G=hubGeom(),s=G.s,t=menuT;
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+  /* sky over the walls, then the square */
+  const sky=ctx.createLinearGradient(0,G.y-40,0,G.back);sky.addColorStop(0,'#060303');sky.addColorStop(1,'#2a110a');ctx.fillStyle='#060303';ctx.fillRect(0,0,W,H);ctx.fillStyle=sky;ctx.fillRect(0,G.y-40,W,G.back-G.y+40);
+  ctx.fillStyle='#140c08';ctx.fillRect(0,G.back,W,H-G.back);
+  ctx.strokeStyle='rgba(120,85,55,.18)';ctx.lineWidth=1;for(let i=1;i<=4;i++){ctx.beginPath();ctx.ellipse(G.cx,G.fy,G.rx*.45*i,G.ry*.45*i,0,0,TAU);ctx.stroke()}
+  ctx.globalCompositeOperation='lighter';drawGlow('fire',G.cx,G.fy,G.rx*2.1,.32);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+  /* buildings: back row behind the heroes */
+  const items=[];HUB.rects={};
+  for(const k in HUBB){const d=HUBB[k],bs=s*(d.row?.82:1),x=G.x+G.w*d.fx,base=d.row?G.front:G.back,r={x0:x-d.w*bs/2-6,x1:x+d.w*bs/2+6,y0:base-(d.h+30)*bs,y1:base+20};HUB.rects[k]=r;
+    const it={y:base,draw:()=>{const sel=(hubSel.t==='b'&&hubSel.k===k)||(hubSel.t==='gate'&&k==='gate'),town=k in{chapel:1,watch:1,wall:1},l=town?townRaw(k):2,hurt=town&&townHurt(k);
+      if(sel){ctx.globalCompositeOperation='lighter';drawGlow('gold',x,base-d.h*bs*.5,d.w*bs*.9,.35);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
+      if(k==='gate'){ctx.globalCompositeOperation='lighter';drawGlow('red',x,base-d.h*bs*.2,d.w*bs*.75,.5+Math.sin(t*2)*.08);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
+      if(k==='altar'){ctx.globalCompositeOperation='lighter';drawGlow('purple',x,base-d.h*bs*.8,d.w*bs*.8,.45+Math.sin(t*2.6)*.1);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
+      ctx.save();ctx.translate(x,base);ctx.scale(bs,bs);drawBuilding(ctx,{k,w:d.w,h:d.h,x:0},l,0);if(hurt){ctx.fillStyle='rgba(10,5,3,.45)';ctx.fillRect(-d.w/2,-d.h,d.w,d.h)}ctx.restore();
+      it.label={x,y:base+11,txt:HUBN[k]+(town?' '+(hurt?'🔥':['·','I','II'][l]):''),col:hurt?'#ff9a6a':town&&!l?'#a8957a':'#e6d6b8',sel,hurt,top:base-d.h*bs,bs}}};
+    items.push(it)}
+  /* heroes walk toward or away from the fire */
+  HUB.hp={};const hs=1.75*s;
+  for(const id in HEROES){const st=HUB.heroes[id]||(HUB.heroes[id]={k:save.hero===id?1:0,ph:rand()*6,walk:0,d:0}),tg=save.hero===id?1:0,d=tg-st.k;
+    if(Math.abs(d)>.001){st.k+=Math.sign(d)*Math.min(Math.abs(d),dt*1.1);st.walk+=dt*9;st.d=d}else{st.walk=0;st.d=0}
+    const a=HANG[id],f=1-.45*st.k,x=G.cx+Math.cos(a)*G.rx*f,y=G.fy+Math.sin(a)*G.ry*f,fr0=SPR[id].fr[8];HUB.hp[id]={x,y,cy:y-14*hs};
+    items.push({y,draw:()=>{const own=!!save.heroes[id],mv=st.d!==0,fi=mv?(Math.floor(st.walk)&7):8,toward=x<G.cx?0:1,flip=st.d<0?1-toward:toward,fr=SPR[id].fr[fi],w=fr.w*hs,h=fr.h*hs,bob=mv?0:Math.sin(t*2+st.ph)*.7,sel=save.hero===id;
+      ctx.globalAlpha=.8;ctx.drawImage(SHADOW,x-w*.3,y-w*.07,w*.6,w*.16);ctx.globalAlpha=1;
+      if(sel){ctx.strokeStyle='rgba(255,210,122,.55)';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y+1,w*.3,w*.1,0,0,TAU);ctx.stroke()}
+      ctx.drawImage(own?fr.n[flip]:hubDark(id,fi,flip),x-w/2,y-14*hs-h/2+bob,w,h);
+      if(sel||!own)HUB.hp[id].label={x,y:y+12*s,txt:sel?HEROES[id].name+(own?'':` · ${HEROES[id].cost} souls`):`${HEROES[id].cost} souls`,col:own?'#ffd9a8':'#c9b3f0',sel}}});void fr0}
+  /* the fire pit: stones and logs (sorted with the heroes), flames after the darkness */
+  items.push({y:G.fy+2,draw:()=>{ctx.fillStyle='#1a0f0a';ctx.save();ctx.translate(G.cx,G.fy);ctx.rotate(.35);ctx.fillRect(-16*s,-3*s,32*s,6*s);ctx.rotate(-.7);ctx.fillRect(-16*s,-3*s,32*s,6*s);ctx.restore();
+    for(let i=0;i<12;i++){const a=i/12*TAU;ctx.fillStyle=i%2?'#4a3d36':'#3a2f2a';ctx.beginPath();ctx.ellipse(G.cx+Math.cos(a)*24*s,G.fy+Math.sin(a)*9*s,5*s,3.4*s,0,0,TAU);ctx.fill()}}});
+  items.sort((a,b)=>a.y-b.y);for(const it of items)it.draw();
+  /* night closes in; the fire pushes it back */
+  const fl=1+Math.sin(t*6)*.03+Math.sin(t*15)*.02,dk=ctx.createRadialGradient(G.cx,G.fy-10*s,G.rx*.55*fl,G.cx,G.fy,Math.hypot(W,H)*.62);dk.addColorStop(0,'rgba(3,1,1,0)');dk.addColorStop(.32,'rgba(3,1,1,.55)');dk.addColorStop(1,'rgba(3,1,1,.86)');ctx.fillStyle=dk;ctx.fillRect(0,0,W,H);
+  hubFlames(G.cx,G.fy,s,t,true);
+  for(const it of items)if(it.label&&it.label.hurt)hubFlames(it.label.x,it.label.top+6*it.label.bs,it.label.bs,t+it.label.x,false);
+  /* sparks */
+  if(rand()<dt*24&&HUB.fl.length<60)HUB.fl.push({x:G.cx+rr(-10,10)*s,y:G.fy-10*s,vx:rr(-12,12),vy:rr(-70,-35),life:rr(.8,1.8)});
+  ctx.globalCompositeOperation='lighter';ctx.fillStyle='#ff9a4a';
+  for(let i=HUB.fl.length-1;i>=0;i--){const p=HUB.fl[i];p.life-=dt;if(p.life<=0){HUB.fl.splice(i,1);continue}p.x+=p.vx*dt+Math.sin(t*3+i)*.3;p.y+=p.vy*dt;ctx.globalAlpha=Math.min(1,p.life);ctx.fillRect(p.x,p.y,1.6,1.6)}
+  ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+  for(const it of items)if(it.label)hubLabel(it.label.x,it.label.y,it.label.txt,it.label.col,it.label.sel,s);
+  for(const id in HUB.hp){const L=HUB.hp[id].label;if(L)hubLabel(L.x,L.y,L.txt,L.col,L.sel,s)}
+  drawAtmos(dt,0,0);ctx.drawImage(VIG,0,0,W,H);
 }
-$('town').addEventListener('click',e=>{const c=$('town'),r=c.getBoundingClientRect(),px=(e.clientX-r.left)*c.width/r.width;let best=0,d=1e9;TOWN.forEach((b,i)=>{const dd=Math.abs(b.x-px);if(dd<d){d=dd;best=i}});townSel=best;drawTown();townInfo()});
-$('townBuy').onclick=()=>{const b=TOWN[townSel],l=townLv(b.k);if(l>=2)return;const c=townCost(l);if(save.souls<c)return;auInit();save.souls-=c;save.town=save.town||{};save.town[b.k]=l+1;persist();sfx.chest();buildMenu()};
+$('hubSpace').addEventListener('click',e=>{auInit();const x=e.clientX,y=e.clientY,G=HUB.G;if(!G)return;
+  let best=null,bd=1e9;for(const id in HUB.hp){const p=HUB.hp[id],d=Math.hypot(x-p.x,(y-p.cy)*.75);if(d<40*G.s+6&&d<bd){bd=d;best=id}}
+  if(best){save.hero=best;persist();sfx.tick();hubSel={t:'hero'};buildMenu();return}
+  for(const k of['wall','altar','chapel','gate','watch']){const r=HUB.rects[k];if(r&&x>=r.x0&&x<=r.x1&&y>=r.y0&&y<=r.y1){sfx.tick();if(k==='altar'){buildAltar();setState('altar');return}hubSel=k==='gate'?{t:'gate'}:{t:'b',k};hubInfo();return}}
+  hubSel={t:'hero'};hubInfo()});
+$('townBuy').onclick=()=>{if(hubSel.t!=='b')return;const k=hubSel.k,r=townRaw(k);auInit();
+  if(townHurt(k)){const c=repairCost(r);if(save.souls<c)return;save.souls-=c;delete save.dmg[k]}
+  else{if(r>=2)return;const c=townCost(r);if(save.souls<c)return;save.souls-=c;save.town=save.town||{};save.town[k]=r+1}
+  persist();sfx.chest();const rc=HUB.rects[k];if(rc)for(let i=0;i<26;i++)HUB.fl.push({x:rr(rc.x0,rc.x1),y:rr(rc.y0+20,rc.y1-20),vx:rr(-20,20),vy:rr(-80,-20),life:rr(.6,1.4)});buildMenu()};
 function buildAltar(){
   $('purse2').textContent=save.souls;const list=$('metaList');list.innerHTML='';
   for(const k in METAS){const m=METAS[k],l=meta(k),max=l>=m.max,cost=metaCost(k,l),row=document.createElement('div');row.className='meta';
@@ -1462,7 +1552,6 @@ function buildAltar(){
     list.appendChild(row)}
 }
 $('playB').onclick=()=>{auInit();const id=save.hero,h=HEROES[id];if(!save.heroes[id]){if(save.souls>=h.cost){save.souls-=h.cost;save.heroes[id]=true;persist();sfx.chest();buildMenu()}return}newRun(id)};
-$('altarB').onclick=()=>{auInit();buildAltar();setState('altar')};
 $('altarBack').onclick=()=>{buildMenu();setState('menu')};
 $('pauseB').onclick=()=>{if(state!=='play')return;const bl=$('buildList');bl.innerHTML='';
   for(const w of run.weapons){const d=document.createElement('div');d.appendChild(icon(w.id,44));d.insertAdjacentHTML('beforeend',`<span>${w.lvl}</span>`);bl.appendChild(d)}
@@ -1471,7 +1560,7 @@ $('pauseB').onclick=()=>{if(state!=='play')return;const bl=$('buildList');bl.inn
 $('resumeB').onclick=()=>{auInit();setState('play')};
 $('quitB').onclick=()=>{run.over=true;showEnd(false)};
 $('againB').onclick=()=>{auInit();newRun(run.hero)};
-$('homeB').onclick=()=>{run=null;buildMenu();setState('menu')};
+$('homeB').onclick=()=>{hubSel=run&&run.burned?{t:'b',k:run.burned}:{t:'hero'};run=null;buildMenu();setState('menu')};
 document.querySelectorAll('.muteB').forEach(b=>b.onclick=e=>{e.stopPropagation();auInit();setMute(!save.muted)});
 /* settings: separate music / effects volume, mute, screen shake (stored on this device only) */
 function syncSet(){for(const[id,k]of[['volM','music'],['volS','sfx']]){const el=$(id),v=Math.round(SET[k]*100);el.value=v;el.style.setProperty('--p',v+'%');$(id+'o').textContent=v}$('shakeT').textContent='Screen shake: '+(SET.shake?'On':'Off');$('goreT').textContent='Blood: '+(SET.gore?'On':'Off');setMute(save.muted,true)}
@@ -1750,7 +1839,7 @@ function frame(now){
   try{
     if(flashA>0)flashA=Math.max(0,flashA-dt*1.6);
     if(run&&state==='play'){if(hitStop>0)hitStop-=dt;else update(run.over?dt*.4:dt)}
-    if(inGame())render(dt);else{menuT+=dt;renderBackdrop(dt)}
+    if(inGame())render(dt);else{menuT+=dt;if(state==='menu'||(state==='settings'&&setFrom==='menu'))renderHub(dt);else renderBackdrop(dt)}
   }catch(err){console.error(err)}
 }
 
